@@ -1,0 +1,22 @@
+{
+	"name": "wavelo/plugin-macro",
+	"type": "library",
+	"description": "Extends Latte templating engine with `n:plugin` macro",
+	"keywords": ["plugin macro", "latte"],
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Ales Kafka"
+		}
+	],
+	"require": {
+		"php": ">=5.5",
+		"latte/latte": "^2.0.0"
+	},
+	"require-dev": {
+		"nette/tester": "~1.3"
+	},
+	"autoload": {
+		"classmap": ["src/"]
+	}
+}
