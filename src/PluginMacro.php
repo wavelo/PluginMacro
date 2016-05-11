@@ -55,6 +55,7 @@ class PluginMacro extends MacroSet
 
 		$code = '';
 		$plugin = '';
+		$rest = '';
 		$tokens = NULL;
 		$depth = 0;
 
@@ -80,18 +81,28 @@ class PluginMacro extends MacroSet
 				$tokens->tokens[] = $token;
 
 			} elseif ($token[0]===',') {
+				$tokenizer->nextAll(MacroTokens::T_WHITESPACE);
+
 				$tokens = clone $node->tokenizer;
 				$tokens->position = -1;
-				$tokens->tokens = [];
+				$tokens->tokens = $tokenizer->nextAll('.');
+
+				if (count($tokens->tokens)===3 && $tokenizer->isNext(MacroTokens::T_VARIABLE)) {
+					$tokens->tokens = [];
+					$rest = $tokenizer->joinUntil(',', ';');
+					$token = $tokenizer->nextToken();
+					$isLast = !$tokenizer->isNext();
+				}
 
 			} elseif (trim($token[0])) {
 				$plugin .= trim($token[0]);
 			}
 
 			if ($token[0]===';' || $isLast) {
-				$code .= "'$plugin' => " . ($tokens ? $writer->formatArray($tokens) : 'array()');
+				$code .= "'$plugin' => " . ($rest ? "$rest + " : '') . ($tokens ? $writer->formatArray($tokens) : 'array()');
 				$code .= $isLast ? '' : ', ';
 				$plugin = '';
+				$rest = '';
 				$tokens = NULL;
 				$depth = 0;
 			}
