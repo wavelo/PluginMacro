@@ -56,6 +56,7 @@ class PluginMacro extends MacroSet
 		$code = '';
 		$plugin = '';
 		$rest = '';
+		$format = 0;
 		$tokens = NULL;
 		$depth = 0;
 
@@ -80,9 +81,18 @@ class PluginMacro extends MacroSet
 
 				$tokens->tokens[] = $token;
 
+			} elseif ($token[0]==='=>') {
+				$format = 1;
+				$tokens = clone $node->tokenizer;
+				$tokens->position = -1;
+				$tokens->tokens = $tokenizer->nextUntil(';');
+				$token = $tokenizer->nextToken();
+				$isLast = !$tokenizer->isNext();
+
 			} elseif ($token[0]===',') {
 				$tokenizer->nextAll(MacroTokens::T_WHITESPACE);
 
+				$format = 2;
 				$tokens = clone $node->tokenizer;
 				$tokens->position = -1;
 				$tokens->tokens = $tokenizer->nextAll('.');
@@ -99,10 +109,17 @@ class PluginMacro extends MacroSet
 			}
 
 			if ($token[0]===';' || $isLast) {
-				$code .= "'$plugin' => " . ($rest ? "$rest + " : '') . ($tokens ? $writer->formatArray($tokens) : 'array()');
+				$code .= "'$plugin' => ";
+				$code .= ($rest ? "$rest + " : '');
+				$code .= ($format===0 ? 'array()' : '');
+				$code .= ($format===1 ? 'current(' : '');
+				$code .= ($format ? $writer->formatArray($tokens) : '');
+				$code .= ($format===1 ? ')' : '');
 				$code .= $isLast ? '' : ', ';
+
 				$plugin = '';
 				$rest = '';
+				$format = 0;
 				$tokens = NULL;
 				$depth = 0;
 			}
@@ -127,7 +144,7 @@ class PluginMacro extends MacroSet
 			self::$code .= "$plugin:";
 
 			if ($values) {
-				$values = json_encode((object) $values);
+				$values = json_encode(is_scalar($values) ? $values : (object) $values);
 				$escaped = htmlSpecialChars($values, ENT_QUOTES, 'UTF-8');
 
 				if (strlen($escaped)<100 && strpos($escaped, '$')===FALSE) {
