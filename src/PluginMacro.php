@@ -95,9 +95,16 @@ class PluginMacro extends MacroSet
 				$format = 2;
 				$tokens = clone $node->tokenizer;
 				$tokens->position = -1;
-				$tokens->tokens = $tokenizer->nextAll('.');
 
-				if (count($tokens->tokens)===3 && $tokenizer->isNext(MacroTokens::T_VARIABLE)) {
+				$isRest = FALSE;
+				if ($tokens->tokens = $tokenizer->nextAll('...')) {
+					$isRest = TRUE;
+
+				} elseif (count($tokens->tokens = $tokenizer->nextAll('.'))===3) {
+					$isRest = TRUE;
+				}
+
+				if ($isRest && $tokenizer->isNext(MacroTokens::T_VARIABLE)) {
 					$tokens->tokens = [];
 					$rest = $tokenizer->joinUntil(',', ';');
 					$token = $tokenizer->nextToken();
