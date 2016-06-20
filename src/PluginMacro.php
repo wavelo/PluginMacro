@@ -118,7 +118,7 @@ class PluginMacro extends MacroSet
 			if ($token[0]===';' || $isLast) {
 				$code .= "'$plugin' => ";
 				$code .= ($rest ? "$rest + " : '');
-				$code .= ($format===0 ? 'array()' : '');
+				$code .= ($format===0 ? 'NULL' : '');
 				$code .= ($format===1 ? 'current(' : '');
 				$code .= ($format ? $writer->formatArray($tokens) : '');
 				$code .= ($format===1 ? ')' : '');
@@ -150,8 +150,8 @@ class PluginMacro extends MacroSet
 		foreach ($params as $plugin => $values) {
 			self::$code .= "$plugin:";
 
-			if ($values) {
 				$values = json_encode(is_scalar($values) ? $values : (object) $values);
+			if (isset($values)) {
 				$escaped = htmlSpecialChars($values, ENT_QUOTES, 'UTF-8');
 
 				if (strlen($escaped)<100 && strpos($escaped, '$')===FALSE) {
