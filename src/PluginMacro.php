@@ -150,8 +150,12 @@ class PluginMacro extends MacroSet
 		foreach ($params as $plugin => $values) {
 			self::$code .= "$plugin:";
 
-				$values = json_encode(is_scalar($values) ? $values : (object) $values);
+			if (is_array($values) && array_keys($values)!==range(0, count($values)-1)) {
+				$values = (object) $values;
+			}
+
 			if (isset($values)) {
+				$values = json_encode($values);
 				$escaped = htmlSpecialChars($values, ENT_QUOTES, 'UTF-8');
 
 				if (strlen($escaped)<100 && strpos($escaped, '$')===FALSE) {
