@@ -150,7 +150,7 @@ class PluginMacro extends MacroSet
 		foreach ($params as $plugin => $values) {
 			self::$code .= "$plugin:";
 
-			if (is_array($values) && array_keys($values)!==range(0, count($values)-1)) {
+			if ($values && is_array($values) && array_keys($values)!==range(0, count($values)-1)) {
 				$values = (object) $values;
 			}
 
