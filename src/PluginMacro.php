@@ -163,14 +163,14 @@ class PluginMacro extends MacroSet
 
 				} else {
 					self::$code .= $id = uniqid('p_');
-					$code .= "var $id = $values;";
+					$code .= "<script type=\"data-plugin/$id\">$values</script>";
 				}
 			}
 
 			self::$code .= '$';
 		}
 
-		return empty($code) ? "" : "<script type=\"text/javascript\">$code</script>";
+		return $code;
 	}
 
 
