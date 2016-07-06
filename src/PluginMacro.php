@@ -167,7 +167,7 @@ class PluginMacro extends MacroSet
 
 	public function macroLabelEnd(MacroNode $node, PhpWriter $writer)
 	{
-		$node->attrCode = ' data-static="<?php echo PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__);
+		$node->attrCode = ' data-'.$node->name.'="<?php echo PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__);
 ?>"';
 	}
 
