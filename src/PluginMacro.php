@@ -30,6 +30,16 @@ class PluginMacro extends MacroSet
 	}
 
 
+	public static function installExtended(Compiler $compiler)
+	{
+		$me = new self($compiler);
+
+		$me->addMacro('target', NULL, [$me, 'macroPluginEnd']);
+		$me->addMacro('static', NULL, [$me, 'macroLabelEnd']);
+		$me->addMacro('atomic', NULL, [$me, 'macroLabelEnd']);
+	}
+
+
 	/**
 	 * @return bool
 	 **/
@@ -45,6 +55,22 @@ class PluginMacro extends MacroSet
 	public static function skipHtml()
 	{
 		return empty(self::$skip);
+	}
+
+
+	/**
+	 * @param string
+	 * @return string
+	 */
+	public static function checksum($str)
+	{
+		$encoded = rtrim(base64_encode(md5($str, TRUE)), '=');
+		$encoded = strtr($encoded, array(
+			'/' => '_',
+			'+' => '-',
+		));
+
+		return $encoded;
 	}
 
 
@@ -136,6 +162,13 @@ class PluginMacro extends MacroSet
 		$node->openingCode = '<?php $_l->plugins = array('.$code.'); $_l->props[] = isset($props) ? $props : NULL; $props = reset($_l->plugins); if (!PluginMacro::skipJs()) echo PluginMacro::initCode("'.$id.'", $_l->plugins); ?>';
 		$node->closingCode = '<?php $props = array_pop($_l->props); ?>';
 		$node->attrCode = '<?php if (!PluginMacro::skipJs()) { ?> data-'.$node->name.'="<?php echo PluginMacro::pluginCode("'.$id.'"); ?>"<?php } ?>';
+	}
+
+
+	public function macroLabelEnd(MacroNode $node, PhpWriter $writer)
+	{
+		$node->attrCode = ' data-static="<?php echo PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__);
+?>"';
 	}
 
 
