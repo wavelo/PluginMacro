@@ -14,8 +14,8 @@ use Latte\PhpWriter;
 class PluginMacro extends MacroSet
 {
 
-	/** @var string */
-	private static $code = '';
+	/** @var string[] */
+	private static $code = [];
 
 	/** @var bool|NULL */
 	public static $skip = NULL;
@@ -132,23 +132,25 @@ class PluginMacro extends MacroSet
 			}
 		}
 
-		$node->openingCode = '<?php $_l->plugins = array('.$code.'); $_l->props[] = isset($props) ? $props : NULL; $props = reset($_l->plugins); if (!PluginMacro::skipJs()) echo PluginMacro::initCode($_l->plugins); ?>';
+		$id = uniqid();
+		$node->openingCode = '<?php $_l->plugins = array('.$code.'); $_l->props[] = isset($props) ? $props : NULL; $props = reset($_l->plugins); if (!PluginMacro::skipJs()) echo PluginMacro::initCode("'.$id.'", $_l->plugins); ?>';
 		$node->closingCode = '<?php $props = array_pop($_l->props); ?>';
-		$node->attrCode = '<?php if (!PluginMacro::skipJs()) { ?> data-plugin="<?php echo PluginMacro::pluginCode(); ?>"<?php } ?>';
+		$node->attrCode = '<?php if (!PluginMacro::skipJs()) { ?> data-'.$node->name.'="<?php echo PluginMacro::pluginCode("'.$id.'"); ?>"<?php } ?>';
 	}
 
 
 	/**
+	 * @param string
 	 * @param array
 	 * @return string
 	 **/
-	public static function initCode(array $params)
+	public static function initCode($nodeId, array $params)
 	{
-		self::$code = '';
+		self::$code[$nodeId] = '';
 
 		$code = '';
 		foreach ($params as $plugin => $values) {
-			self::$code .= "$plugin:";
+			self::$code[$nodeId] .= "$plugin:";
 
 			if ($values && is_array($values) && array_keys($values)!==range(0, count($values)-1)) {
 				$values = (object) $values;
@@ -159,15 +161,15 @@ class PluginMacro extends MacroSet
 				$escaped = htmlSpecialChars($values, ENT_QUOTES, 'UTF-8');
 
 				if (strlen($escaped)<100 && strpos($escaped, '$')===FALSE) {
-					self::$code .= $escaped;
+					self::$code[$nodeId] .= $escaped;
 
 				} else {
-					self::$code .= $id = uniqid('p_');
+					self::$code[$nodeId] .= $id = uniqid('p_');
 					$code .= "<script type=\"data-plugin/$id\">$values</script>";
 				}
 			}
 
-			self::$code .= '$';
+			self::$code[$nodeId] .= '$';
 		}
 
 		return $code;
@@ -175,11 +177,12 @@ class PluginMacro extends MacroSet
 
 
 	/**
+	 * @param string
 	 * @return string
 	 **/
-	public static function pluginCode()
+	public static function pluginCode($nodeId)
 	{
-		return self::$code;
+		return self::$code[$nodeId];
 	}
 
 
