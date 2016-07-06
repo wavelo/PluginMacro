@@ -26,7 +26,7 @@ class PluginMacro extends MacroSet
 		$me = new self($compiler);
 
 		$me->addMacro('plugin', NULL, [$me, 'macroPluginEnd']);
-		$me->addMacro('skip', [$me, 'macroSkip'], [$me, 'macroEndSkip']);
+		$me->addMacro('skip', [$me, 'macroSkip'], [$me, 'macroSkipEnd']);
 	}
 
 
@@ -198,7 +198,7 @@ class PluginMacro extends MacroSet
 	/**
 	 * {/skip ...}
 	 */
-	public function macroEndSkip(MacroNode $node, PhpWriter $writer)
+	public function macroSkipEnd(MacroNode $node, PhpWriter $writer)
 	{
 		if (preg_match('#^.*? n:\w+>\n?#s', $node->content, $m1) && preg_match('#^.*>[^<]+/\<#Us', strrev($node->content), $m2)) {
 			$node->closingCode .= "<?php } ?>" . strrev($m2[0]);
