@@ -159,8 +159,8 @@ class PluginMacro extends MacroSet
 		}
 
 		$id = uniqid();
-		$node->openingCode = '<?php $_l->plugins = array('.$code.'); $_l->props[] = isset($props) ? $props : NULL; $props = reset($_l->plugins); if (!PluginMacro::skipJs()) echo PluginMacro::initCode("'.$id.'", $_l->plugins); ?>';
-		$node->closingCode = '<?php $props = array_pop($_l->props); ?>';
+		$node->openingCode = '<?php $this->global->plugins = array('.$code.'); $this->global->props[] = isset($props) ? $props : NULL; $props = reset($this->global->plugins); if (!PluginMacro::skipJs()) echo PluginMacro::initCode("'.$id.'", $this->global->plugins); ?>';
+		$node->closingCode = '<?php $props = array_pop($this->global->props); ?>';
 		$node->attrCode = '<?php if (!PluginMacro::skipJs()) { ?> data-'.$node->name.'="<?php echo PluginMacro::pluginCode("'.$id.'"); ?>"<?php } ?>';
 	}
 
