@@ -37,6 +37,7 @@ class PluginMacro extends MacroSet
 		$me->addMacro('target', NULL, [$me, 'macroPluginEnd']);
 		$me->addMacro('static', NULL, [$me, 'macroLabelEnd']);
 		$me->addMacro('atomic', NULL, [$me, 'macroLabelEnd']);
+		$me->addMacro('layer', NULL, [$me, 'macroLayerEnd']);
 	}
 
 
@@ -168,6 +169,13 @@ class PluginMacro extends MacroSet
 	public function macroLabelEnd(MacroNode $node, PhpWriter $writer)
 	{
 		$node->attrCode = ' data-'.$node->name.'="<?php echo PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__);
+?>"';
+	}
+
+
+	public function macroLayerEnd(MacroNode $node, PhpWriter $writer)
+	{
+		$node->attrCode = ' data-'.$node->name.'="<?php echo PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__) . "#" . $presenter->getRequest()->getPresenterName()
 ?>"';
 	}
 
