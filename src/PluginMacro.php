@@ -139,11 +139,19 @@ class PluginMacro extends MacroSet
 				}
 
 			} elseif (trim($token[0])) {
-				$plugin .= trim($token[0]);
+				if ($token[0]==='{') {
+					$plugin .= '".(';
+
+				} elseif ($token[0]==='}') {
+					$plugin .= ')."';
+
+				} else {
+					$plugin .= trim($token[0]);
+				}
 			}
 
 			if ($token[0]===';' || $isLast) {
-				$code .= "'$plugin' => ";
+				$code .= "\"$plugin\" => ";
 				$code .= ($rest ? "$rest + " : '');
 				$code .= ($format===0 ? 'NULL' : '');
 				$code .= ($format===1 ? 'current(' : '');
