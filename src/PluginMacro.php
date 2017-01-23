@@ -183,7 +183,18 @@ class PluginMacro extends MacroSet
 
 	public function macroLayerEnd(MacroNode $node, PhpWriter $writer)
 	{
-		$node->attrCode = ' data-'.$node->name.'="<?php echo PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__) . "#" . $presenter->getRequest()->getPresenterName()
+		$code[] = 'PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__)';
+		$code[] = '$presenter->getRequest()->getPresenterName()';
+		$code[] = 'PluginMacro::checksum(' . implode('.', array_map(function($arg) {
+			if ($arg[0]==='$') {
+				return "(isset($arg) ? strval($arg) : '')";
+
+			} else {
+				return "\$presenter->getParameter('$arg', '')";
+			}
+		}, array_filter(explode(',', $node->args)))) . ')';
+
+		$node->attrCode = ' data-'.$node->name.'="<?php echo '. implode('."#".', $code) . '
 ?>"';
 	}
 
