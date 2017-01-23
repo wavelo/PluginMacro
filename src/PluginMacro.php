@@ -186,6 +186,8 @@ class PluginMacro extends MacroSet
 		$code[] = 'PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__)';
 		$code[] = '$presenter->getRequest()->getPresenterName()';
 		$code[] = 'PluginMacro::checksum(' . implode('.', array_map(function($arg) {
+			$arg = trim($arg);
+
 			if ($arg[0]==='$') {
 				return "(isset($arg) ? strval($arg) : '')";
 
