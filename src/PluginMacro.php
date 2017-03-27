@@ -20,6 +20,9 @@ class PluginMacro extends MacroSet
 	/** @var bool|NULL */
 	public static $skip = NULL;
 
+	/** @var string[] */
+	public static $masks = [];
+
 
 	public static function install(Compiler $compiler)
 	{
@@ -183,9 +186,7 @@ class PluginMacro extends MacroSet
 
 	public function macroLayerEnd(MacroNode $node, PhpWriter $writer)
 	{
-		$code[] = 'PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__)';
-		$code[] = '$presenter->getRequest()->getPresenterName()';
-		$code[] = 'PluginMacro::checksum(' . implode('.', array_map(function($arg) {
+		$params = array_map(function($arg) {
 			$arg = trim($arg);
 
 			if ($arg[0]==='$') {
@@ -194,7 +195,13 @@ class PluginMacro extends MacroSet
 			} else {
 				return "\$presenter->getParameter('$arg', '')";
 			}
-		}, array_filter(explode(',', $node->args)))) . ')';
+		}, array_filter(explode(',', $node->args)));
+
+		array_unshift($params, 'PluginMacro::routeToMask($presenter->getName())');
+
+		$code[] = 'PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__)';
+		$code[] = '$presenter->getName().":".($presenter->getAction()==="default" ? "" : $presenter->getAction())';
+		$code[] = 'PluginMacro::checksum(' . implode('.', $params) . ')';
 
 		$node->attrCode = ' data-'.$node->name.'="<?php echo '. implode('."#".', $code) . '
 ?>"';
@@ -270,6 +277,58 @@ class PluginMacro extends MacroSet
 		} else {
 			return $writer->write('}');
 		}
+	}
+
+
+	/**
+	 * @param string
+	 * @return string
+	 */
+	public static function routeToMask($route)
+	{
+		foreach (self::$masks as $mask) {
+			$mask = (array) self::createRouteMask(explode(':', $mask));
+			$parts = explode(':', $route);
+			$arbitrary = FALSE;
+
+			for ($i=0; $i<count($parts); $i++) {
+				if (isset($mask[$parts[$i]])) {
+					$arbitrary = FALSE;
+					$mask = $mask[$parts[$i]];
+
+				} elseif (isset($mask['%'])) {
+					$arbitrary = FALSE;
+					$mask = $mask['%'];
+
+				} elseif (isset($mask['*'])) {
+					$parts[$i] = '*';
+					$mask = $mask['*'];
+					$arbitrary = TRUE;
+
+				} elseif ($arbitrary) {
+					$parts[$i] = '*';
+
+				} else {
+					continue 2;
+				}
+			}
+
+			if ($mask===TRUE) {
+				return implode(':', $parts);
+			}
+		}
+
+		return $route;
+	}
+
+
+	/**
+	 * @param array
+	 * @return array
+	 **/
+	private static function createRouteMask(array $parts)
+	{
+		return empty($parts) ?: array_fill_keys(explode('|', array_shift($parts)), self::createRouteMask($parts));
 	}
 
 }
