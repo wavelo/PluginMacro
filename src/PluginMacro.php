@@ -175,7 +175,14 @@ class PluginMacro extends MacroSet
 
 	public function macroLabelEnd(MacroNode $node, PhpWriter $writer)
 	{
-		$node->attrCode = ' data-'.$node->name.'="<?php echo PluginMacro::checksum("'.md5($node->content).'" . __FILE__ . __LINE__);
+		$id = $node->args ? $writer->formatWord($node->args) : '__FILE__ . __LINE__';
+
+		$content = $node->content;
+		$content = preg_replace("#n:q[0-9]+q#", "n:q0q", $content);
+		$content = md5($content);
+		$content = $writer->formatWord($content);
+
+		$node->attrCode = ' data-'.$node->name.'="<?php echo PluginMacro::checksum('.$id.' . '.$content.');
 ?>"';
 	}
 
