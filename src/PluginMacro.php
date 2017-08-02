@@ -14,9 +14,6 @@ use Latte\PhpWriter;
 class PluginMacro extends MacroSet
 {
 
-	/** @var string[] */
-	private static $code = [];
-
 	/** @var bool|NULL */
 	public static $skip = NULL;
 
@@ -170,10 +167,9 @@ class PluginMacro extends MacroSet
 			}
 		}
 
-		$id = uniqid();
-		$node->openingCode = '<?php $this->global->plugins = array('.$code.'); $this->global->props[] = isset($props) ? $props : NULL; $props = reset($this->global->plugins); if (!PluginMacro::skipJs()) echo PluginMacro::initCode("'.$id.'", $this->global->plugins); ?>';
-		$node->closingCode = '<?php $props = array_pop($this->global->props); ?>';
-		$node->attrCode = '<?php if (!PluginMacro::skipJs()) { ?> data-'.$node->name.'="<?php echo PluginMacro::pluginCode("'.$id.'"); ?>"<?php } ?>';
+		$node->openingCode = '<?php if (!PluginMacro::skipJs()) echo PluginMacro::initCode($this->global->plugins, array('.$code.')); ?>';
+		$node->attrCode = '<?php if (!PluginMacro::skipJs()) { ?> data-'.$node->name.'="<?php echo $this->global->plugins; ?>"<?php } ?>';
+		$node->closingCode = '<?php unset($this->global->plugins) ?>';
 	}
 
 
@@ -209,17 +205,16 @@ class PluginMacro extends MacroSet
 
 
 	/**
-	 * @param string
+	 * @param &string
 	 * @param array
 	 * @return string
 	 **/
-	public static function initCode($nodeId, array $params)
+	public static function initCode(&$pluginCode, array $params)
 	{
-		self::$code[$nodeId] = '';
-
+		$pluginCode = '';
 		$code = '';
 		foreach ($params as $plugin => $values) {
-			self::$code[$nodeId] .= "$plugin:";
+			$pluginCode .= "$plugin:";
 
 			if ($values && is_array($values) && array_keys($values)!==range(0, count($values)-1)) {
 				$values = (object) $values;
@@ -230,29 +225,20 @@ class PluginMacro extends MacroSet
 				$escaped = htmlSpecialChars($values, ENT_QUOTES, 'UTF-8');
 
 				if (strlen($escaped)<100 && strpos($escaped, '$')===FALSE) {
-					self::$code[$nodeId] .= $escaped;
+					$pluginCode .= $escaped;
 
 				} else {
-					self::$code[$nodeId] .= $id = uniqid('p_');
+					$pluginCode .= $id = uniqid('p_');
 					$code .= "<script type=\"data-plugin/$id\">$values</script>";
 				}
 			}
 
-			self::$code[$nodeId] .= '$';
+			$pluginCode .= '$';
 		}
 
 		return $code;
 	}
 
-
-	/**
-	 * @param string
-	 * @return string
-	 **/
-	public static function pluginCode($nodeId)
-	{
-		return self::$code[$nodeId];
-	}
 
 
 	/**
