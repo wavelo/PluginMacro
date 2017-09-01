@@ -167,8 +167,8 @@ class PluginMacro extends MacroSet
 			}
 		}
 
-		$node->openingCode = '<?php if (!PluginMacro::skipJs()) echo PluginMacro::initCode($this->global->plugins, array('.$code.')); ?>';
-		$node->attrCode = '<?php if (!PluginMacro::skipJs()) { ?> data-'.$node->name.'="<?php echo $this->global->plugins; ?>"<?php } ?>';
+		$node->openingCode = '<?php if (!PluginMacro::skipJs()) echo PluginMacro::initCode($this->global->plugins["'.$node->name.'"], array('.$code.')); ?>';
+				$node->attrCode = '<?php if (!PluginMacro::skipJs()) { ?> data-'.$node->name.'="<?php echo $this->global->plugins["'.$node->name.'"]; ?>"<?php } ?>';
 		$node->closingCode = '<?php unset($this->global->plugins) ?>';
 	}
 
