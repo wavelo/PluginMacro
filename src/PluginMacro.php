@@ -38,6 +38,7 @@ class PluginMacro extends MacroSet
 		$me->addMacro('static', NULL, [$me, 'macroLabelEnd']);
 		$me->addMacro('atomic', NULL, [$me, 'macroLabelEnd']);
 		$me->addMacro('layer', NULL, [$me, 'macroLayerEnd']);
+		$me->addMacro('swap', NULL, [$me, 'macroSwapEnd']);
 	}
 
 
@@ -208,6 +209,12 @@ class PluginMacro extends MacroSet
 
 		$node->attrCode = ' data-'.$node->name.'="<?php echo '. implode('."#".', $code) . '
 ?>"';
+	}
+
+
+	public function macroSwapEnd(MacroNode $node, PhpWriter $writer)
+	{
+		$node->attrCode = $writer->write(' data-swap="<?php echo '. $writer->formatWord($node->tokenizer->fetchWord()) .' ?>"');
 	}
 
 
